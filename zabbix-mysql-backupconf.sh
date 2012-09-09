@@ -54,7 +54,7 @@ history history_log history_str history_str_sync history_sync history_text \
 history_uint history_uint_sync trends trends_uint )
 
 DUMPFILE="${DUMPDIR}/zbx-conf-bkup-`date +%Y%m%d-%H%M`.sql"
->"${DUMPFILE}"
+
 
 # CONFTABLES
 for table in ${CONFTABLES[*]}; do
