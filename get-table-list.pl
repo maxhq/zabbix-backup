@@ -86,7 +86,9 @@ for my $tag (@tags) {
 
 unlink $tmpfile;
 
-print "----------------------------------------\n";
+print "\n\n";
+print "TABLE                     FIRST USE    LAST USE\n";
+print "-------------------------------------------------\n";
 for my $tab (sort keys %$tables) {
-	printf "%-25s %-10s - %-10s\n", $tab, $tables->{$tab}->[0], $tables->{$tab}->[-1];
+	printf "%-25s %-10s - %s\n", $tab, $tables->{$tab}->[0], $tables->{$tab}->[-1];
 }
