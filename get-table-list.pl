@@ -11,6 +11,36 @@ sub stop {
 	exit;
 }
 
+# sort tags as version numbers
+sub cmpver {
+	my ($a, $b) = @_;
+	
+	# split version parts: 3.2.5rc1 --> 3  2  5rc1
+	my @a_parts = split /\./, $a;
+	my @b_parts = split /\./, $b;
+	
+	for (my $i=0; $i<scalar(@a_parts); $i++) {
+		return 1 if $i >= scalar(@b_parts);
+		# split number parts: 5rc1 --> 5  rc  1
+		my ($a_num, $a_type, $a_idx) = $a_parts[$i] =~ m/^(\d+)(\D+)?(\d+)?$/;
+		my ($b_num, $b_type, $b_idx) = $b_parts[$i] =~ m/^(\d+)(\D+)?(\d+)?$/;
+		my $cmp;
+		# 4 before 5
+		$cmp = $a_num <=> $b_num;   return $cmp unless $cmp == 0;
+		# 5rc1 before 5
+		return -1 if     $a_type and not $b_type;
+		return  1 if not $a_type and     $b_type;
+		# a1 before b1
+		$cmp = $a_type cmp $b_type; return $cmp unless $cmp == 0;
+		# rc1 before rc2
+		$cmp = $a_idx <=> $b_idx;   return $cmp unless $cmp == 0;
+	}
+	# equal up to now, but b has more parts
+	return -1 if scalar(@a_parts) < scalar(@b_parts);
+	# equal
+	return 0;
+}
+
 # Check for subversion client
 my $svn = `which svn`;
 stop("No subversion client found") unless $svn;
@@ -19,14 +49,10 @@ stop("No subversion client found") unless $svn;
 my @tags = `svn ls 'svn://svn.zabbix.com/tags'`;
 chomp @tags; # remove trailing newline
 @tags = (map { $_ =~ s/\/$//; $_ } @tags); # remove trailing slash
-
-# Sort tags as version numbers (http://www.perlmonks.org/?node_id=814026)
-@tags = map {$_->[0]}
-  sort {$a->[1] cmp $b->[1]}
-  map {[$_, pack "C*", split /\./]} @tags;
+@tags = sort { cmpver($a,$b) } @tags;
 
 for my $tag (@tags) {
-	next if $tag < 1.4; # before Zabbix 1.4, schema was stored as pure SQL
+	next if cmpver($tag, "1.3.1") < 0; # before Zabbix 1.3.1, schema was stored as pure SQL
 
 	my $schema;
 	my $subdir;
@@ -62,5 +88,5 @@ unlink $tmpfile;
 
 print "----------------------------------------\n";
 for my $tab (sort keys %$tables) {
-	printf "%-25s %s - %s\n", $tab, $tables->{$tab}->[0], $tables->{$tab}->[-1];
+	printf "%-25s %-10s - %-10s\n", $tab, $tables->{$tab}->[0], $tables->{$tab}->[-1];
 }
