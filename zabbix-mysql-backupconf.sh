@@ -20,12 +20,12 @@
 #      - Andreas Niedermann (dre-)
 #
 # HISTORY
-#     v0.7 - 2014-10-02 Complete overhaul so that script works with all previous Zabbix versions
-#     v0.6 - 2014-09-15 Updated the table list for use with zabbix v2.2.3
-#     v0.5 - 2013-05-13 Added table list comparison between database and script
-#     v0.4 - 2012-03-02 Incorporated mysqldump options suggested by Jonathan Bayer
-#     v0.3 - 2012-02-06 Backup of Zabbix 1.9.x / 2.0.0, removed unnecessary use of
-#                       variables (DATEBIN etc) for commands that use to be in $PATH
+#     v0.7.0 - 2014-10-02 Complete overhaul so that script works with all previous Zabbix versions
+#     v0.6   - 2014-09-15 Updated the table list for use with zabbix v2.2.3
+#     v0.5   - 2013-05-13 Added table list comparison between database and script
+#     v0.4   - 2012-03-02 Incorporated mysqldump options suggested by Jonathan Bayer
+#     v0.3   - 2012-02-06 Backup of Zabbix 1.9.x / 2.0.0, removed unnecessary use of
+#                         variables (DATEBIN etc) for commands that use to be in $PATH
 #     v0.2 - 2011-11-05
 #
 # AUTHOR
