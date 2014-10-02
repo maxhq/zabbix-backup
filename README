@@ -1,4 +1,14 @@
-This is a database backup script for Zabbix 2.2.3 that distincts between configuration and mass data tables.
+This is a database backup script for all Zabbix versions up to 2.4.0.
+It distincts between configuration and mass data tables.
 
 Tables holding configuration data will be fully backuped while for mass data tables only the table schema is stored.
+
 This way you have a small backup of your complete configuration, and in case of disaster "only" use your item history.
+
+----------
+
+zabbix-mysql-backupconf.sh
+    Zabbix backup script for MySQL databases
+
+get-table-list.pl
+    Shows all database tables ever used (since 1.3.1) by querying Zabbix Subversion repository
