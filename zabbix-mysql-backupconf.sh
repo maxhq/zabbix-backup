@@ -29,7 +29,7 @@
 #     v0.2 - 2011-11-05
 #
 # AUTHOR
-#     Jens Berthold (maxhq), 2013
+#     Jens Berthold (maxhq), 2014
 
 
 #
@@ -55,6 +55,17 @@ DUMPDIR="${MAINDIR}/`date +%Y%m%d-%H%M`"
 DUMPFILE="${DUMPDIR}/zabbix-conf-backup-`date +%Y%m%d-%H%M`.sql"
 
 #
+# FUNCTIONS
+#
+
+# Returns TRUE if argument 1 is part of the given array (remaining arguments)
+elementIn () {
+	local e
+	for e in "${@:2}"; do [[ "$e" == "$1" ]] && return 0; done
+	return 1
+}
+
+#
 # CHECKS
 #
 if [ ! -x /usr/bin/mysqldump ]; then
@@ -64,7 +75,7 @@ if [ ! -x /usr/bin/mysqldump ]; then
 fi
 
 #
-# Read table list from __DATA__ section at the end of this script
+# READ TABLE LIST from __DATA__ section at the end of this script
 # (http://stackoverflow.com/a/3477269/2983301) 
 #
 DATA_TABLES=()
@@ -83,13 +94,6 @@ fi
 #
 # BACKUP
 #
-# Returns TRUE if argument 1 is part of the given array (remaining arguments)
-elementIn () {
-	local e
-	for e in "${@:2}"; do [[ "$e" == "$1" ]] && return 0; done
-	return 1
-}
-
 mkdir -p "${DUMPDIR}"
 
 # Read table list from database
