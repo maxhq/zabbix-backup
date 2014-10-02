@@ -35,12 +35,11 @@
 #
 # CONFIGURATION
 #
-
 # mysql database
 DBHOST="1.2.3.4"
 DBNAME="zabbix"
 DBUSER="zabbix"
-DBPASS="zabbix"
+DBPASS="password"
 
 # backup target path
 #MAINDIR="/var/lib/zabbix/backupconf"
@@ -50,7 +49,6 @@ MAINDIR="`dirname \"$0\"`"
 #
 # CONSTANTS
 #
-
 MYSQL_CONN="-h ${DBHOST} -u ${DBUSER} -p${DBPASS} ${DBNAME}"
 MYSQL_BATCH="mysql --batch --silent $MYSQL_CONN"
 DUMPDIR="${MAINDIR}/`date +%Y%m%d-%H%M`"
@@ -59,7 +57,6 @@ DUMPFILE="${DUMPDIR}/zabbix-conf-backup-`date +%Y%m%d-%H%M`.sql"
 #
 # CHECKS
 #
-
 if [ ! -x /usr/bin/mysqldump ]; then
 	echo "mysqldump not found."
 	echo "(with Debian, \"apt-get install mysql-client\" will help)"
@@ -70,7 +67,6 @@ fi
 # Read table list from __DATA__ section at the end of this script
 # (http://stackoverflow.com/a/3477269/2983301) 
 #
-
 DATA_TABLES=()
 while read line; do
 	table=$(echo "$line" | cut -d" " -f1)
@@ -87,7 +83,6 @@ fi
 #
 # BACKUP
 #
-
 # Returns TRUE if argument 1 is part of the given array (remaining arguments)
 elementIn () {
 	local e
