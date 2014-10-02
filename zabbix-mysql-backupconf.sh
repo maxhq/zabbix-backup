@@ -71,6 +71,7 @@ fi
 # Read table list from __DATA__ section at the end of this script
 # (http://stackoverflow.com/a/3477269/2983301) 
 #
+
 DATA_TABLES=()
 while read line; do
 	table=$(echo "$line" | cut -d" " -f1)
@@ -97,26 +98,48 @@ elementIn () {
 
 mkdir -p "${DUMPDIR}"
 
+# Read table list from database
+DB_TABLES=$($MYSQL_BATCH -e "SELECT table_name FROM information_schema.tables WHERE table_schema = '$DBNAME'" | sort)
+DB_TABLE_NUM=$(echo "$DB_TABLES" | wc -l)
+
+PROCESSED_DATA_TABLES=()
+i=0
+
 echo "Starting table backups..."
 while read table; do
-	printf "%s %-25s " "-" "${table}"
+	# large data tables: only store schema
 	if elementIn "$table" "${DATA_TABLES[@]}"; then
-		echo "only schema"
 		dump_opt="--no-data"
+		PROCESSED_DATA_TABLES+=($table)
+	# configuration tables: full dump
 	else
-		echo "full"
 		dump_opt="--extended-insert=FALSE"
 	fi
 	mysqldump --routines --opt --single-transaction --skip-lock-tables \
 		$dump_opt $MYSQL_CONN --tables ${table} >>"${DUMPFILE}"
-done < <($MYSQL_BATCH -e "SELECT table_name FROM information_schema.tables WHERE table_schema = '$DBNAME'" | sort) 
 
-echo
+	# show percentage
+	i=$((i+1)); i_percent=$(($i * 100 / $DB_TABLE_NUM))
+	if [ $(($i_percent % 12)) -eq 0 ]; then
+		echo -n "${i_percent}%"
+	else
+		if [ $(($i_percent % 2)) -eq 0 ]; then echo -n "."; fi
+	fi
+done <<<"$DB_TABLES" 
+
+echo -e "\n"
+echo "For the following large tables only the schema (without data) was stored:"
+for table in "${PROCESSED_DATA_TABLES[@]}"; do echo " - $table"; done
+
+echo 
 echo "Compressing backup file ${DUMPFILE}..."
 gzip -f "${DUMPFILE}"
+if [ $? -ne 0 ]; then
+	echo -e "\nERROR: Could not compress backup file, see previous messages"
+	exit
+fi
 
-echo
-echo "Backup Completed - ${DUMPDIR}"
+echo -e "\nBackup Completed - ${DUMPDIR}"
 
 exit
 
