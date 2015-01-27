@@ -20,6 +20,7 @@
 # HISTORY
 #     0.7.1 (2015-01-27)
 #         NEW: Parsing of commandline arguments implemented
+#         ENH: Try reverse lookup of IPs and include hostname/IP in filename
 #         REV: Stop if database password is wrong
 # 
 #     0.7.0 (2014-10-02)
@@ -108,7 +109,12 @@ fi
 MYSQL_CONN="-h ${DBHOST} -u ${DBUSER} -p${DBPASS} ${DBNAME}"
 MYSQL_BATCH="mysql --batch --silent $MYSQL_CONN"
 
-DUMPFILEBASE="zabbix_$(date +%Y%m%d-%H%M).sql"
+# Try resolving a given host ip
+DBHOSTNAME="$DBHOST"
+newHostname=$(dig +noall +answer -x $DBHOST | sed -r 's/((\S+)\s+)+([^\.]+)\..*/\3/')
+test \! -z "$newHostname" && DBHOSTNAME="$newHostname"
+
+DUMPFILEBASE="zabbix_${DBHOSTNAME}_$(date +%Y%m%d-%H%M).sql"
 DUMPFILE="${DUMPDIR}/${DUMPFILEBASE}"
 
 #
