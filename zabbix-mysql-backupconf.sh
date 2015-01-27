@@ -3,14 +3,12 @@
 #     zabbix-mysql-backupconf.sh - Configuration Backup for Zabbix 2.0 w/MySQL
 #
 # SYNOPSIS
-#     This is a MySQL configuration backup script for Zabbix v2.0 oder 2.2.
+#     This is a MySQL configuration backup script for Zabbix 2.0, 2.2 or 2.4.
 #     It does a full backup of all configuration tables, but only a schema
 #     backup of large data tables.
 #
-#     The original script was written by Ricardo Santos and published at
-#     http://zabbixzone.com/zabbix/backuping-only-the-zabbix-configuration/
-#     and
-#     https://github.com/xsbr/zabbixzone/blob/master/zabbix-mysql-backupconf.sh
+#     The script is based on a script by Ricardo Santos
+#     (http://zabbixzone.com/zabbix/backuping-only-the-zabbix-configuration/)
 #
 #     Credits for some suggestions concerning the original script to:
 #      - Ricardo Santos
@@ -20,39 +18,107 @@
 #      - Andreas Niedermann (dre-)
 #
 # HISTORY
-#     v0.7.0 - 2014-10-02 Complete overhaul so that script works with all previous Zabbix versions
-#     v0.6   - 2014-09-15 Updated the table list for use with zabbix v2.2.3
-#     v0.5   - 2013-05-13 Added table list comparison between database and script
-#     v0.4   - 2012-03-02 Incorporated mysqldump options suggested by Jonathan Bayer
-#     v0.3   - 2012-02-06 Backup of Zabbix 1.9.x / 2.0.0, removed unnecessary use of
-#                         variables (DATEBIN etc) for commands that use to be in $PATH
-#     v0.2 - 2011-11-05
+#     0.7.1 (2015-01-27)
+#         NEW: Parsing of commandline arguments implemented
+# 
+#     0.7.0 (2014-10-02)
+#         ENH: Complete overhaul to make script work with lots of Zabbix versions
+#
+#     0.6.0 (2014-09-15)
+#         REV: Updated the table list for use with zabbix v2.2.3
+#
+#     0.5.0 (2013-05-13)
+#         NEW: Added table list comparison between database and script
+#
+#     0.4.0 (2012-03-02)
+#         REV: Incorporated mysqldump options suggested by Jonathan Bayer
+#
+#     0.3.0 (2012-02-06)
+#         ENH: Backup of Zabbix 1.9.x / 2.0.0, removed unnecessary use of
+#              variables (DATEBIN etc) for commands that use to be in $PATH
+#
+#     0.2.0 (2011-11-05)
 #
 # AUTHOR
-#     Jens Berthold (maxhq), 2014
+#     Jens Berthold (maxhq), 2015
 
 
 #
-# CONFIGURATION
+# DEFAULT VALUES
 #
-# mysql database
-DBHOST="1.2.3.4"
+# following will store the backup in a subdirectory of the current directory
+DUMPDIR="$(dirname "$(realpath -s "$0")")"
+DBHOST="127.0.0.1"
 DBNAME="zabbix"
 DBUSER="zabbix"
-DBPASS="password"
+DBPASS=""
 
-# backup target path
-#MAINDIR="/var/lib/zabbix/backupconf"
-# following will store the backup in a subdirectory of the current directory
-MAINDIR="`dirname \"$0\"`"
+#
+# SHOW HELP
+#
+if [ -z "$1" ]; then
+	cat <<EOF
+USAGE
+	$(basename $0) [options]
+	
+OPTIONS
+	 -h host      - hostname/IP of MySQL server (default: $DBHOST)
+	 -d database  - Zabbix database name (default: $DBNAME)
+	 -u user      - MySQL user to access Zabbix database (default: $DBUSER)
+	 -p password  - MySQL user password (specify "-" for a prompt)
+	 -o outputdir - output directory for the MySQL dump file
+	                (default: $DUMPDIR) 
+
+EXAMPLE
+	$(basename $0) -h 1.2.3.4 -d zabbixdb -u zabbix -p test
+	$(basename $0) -d zabbixdb -u zabbix -p - -o /tmp
+EOF
+	exit 1
+fi	
+
+#
+# PARSE COMMAND LINE ARGUMENTS
+#
+while getopts ":h:d:u:p:o:" opt; do
+  case $opt in
+    h)  DBHOST="$OPTARG" ;;
+    d)  DBNAME="$OPTARG" ;;
+    u)  DBUSER="$OPTARG" ;;
+    p)  DBPASS="$OPTARG" ;;
+    o)  DUMPDIR="$OPTARG" ;;
+    \?) echo "Invalid option: -$OPTARG" >&2; exit 1 ;;
+    :)  echo "Option -$OPTARG requires an argument" >&2; exit 1 ;;
+  esac
+done
+
+if [ "$DBPASS" = "" ]; then
+	echo "No password given" >&2
+	exit 1
+fi
+
+if [ "$DBPASS" = "-" ]; then
+	read -s -p "Enter MySQL password for user '$DBUSER' (input will be hidden): " DBPASS
+	echo ""
+fi
 
 #
 # CONSTANTS
 #
 MYSQL_CONN="-h ${DBHOST} -u ${DBUSER} -p${DBPASS} ${DBNAME}"
 MYSQL_BATCH="mysql --batch --silent $MYSQL_CONN"
-DUMPDIR="${MAINDIR}/`date +%Y%m%d-%H%M`"
-DUMPFILE="${DUMPDIR}/zabbix-conf-backup-`date +%Y%m%d-%H%M`.sql"
+
+DUMPFILEBASE="zabbix_$(date +%Y%m%d-%H%M).sql"
+DUMPFILE="${DUMPDIR}/${DUMPFILEBASE}"
+
+#
+# CONFIG DUMP
+#
+cat <<EOF
+Configuration:
+ - host:     $DBHOST ($DBHOSTNAME)
+ - database: $DBNAME
+ - user:     $DBUSER
+EOF
 
 #
 # FUNCTIONS
@@ -69,8 +135,8 @@ elementIn () {
 # CHECKS
 #
 if [ ! -x /usr/bin/mysqldump ]; then
-	echo "mysqldump not found."
-	echo "(with Debian, \"apt-get install mysql-client\" will help)"
+	echo "mysqldump not found." >&2
+	echo "(with Debian, \"apt-get install mysql-client\" will help)" >&2
 	exit 1
 fi
 
@@ -87,7 +153,7 @@ done < <(sed '0,/^__DATA__$/d' "$0" | tr -s " ")
 
 # paranoid check
 if [ ${#DATA_TABLES[@]} -lt 5 ]; then
-	echo "ERROR: The number of large data tables configurd in this script is less than 5."
+	echo "ERROR: The number of large data tables configured in this script is less than 5." >&2
 	exit 1
 fi
 
@@ -97,6 +163,7 @@ fi
 mkdir -p "${DUMPDIR}"
 
 # Read table list from database
+echo "Fetching list of existing tables..."
 DB_TABLES=$($MYSQL_BATCH -e "SELECT table_name FROM information_schema.tables WHERE table_schema = '$DBNAME'" | sort)
 DB_TABLE_NUM=$(echo "$DB_TABLES" | wc -l)
 
@@ -130,14 +197,14 @@ echo "For the following large tables only the schema (without data) was stored:"
 for table in "${PROCESSED_DATA_TABLES[@]}"; do echo " - $table"; done
 
 echo 
-echo "Compressing backup file ${DUMPFILE}..."
+echo "Compressing backup file..."
 gzip -f "${DUMPFILE}"
 if [ $? -ne 0 ]; then
-	echo -e "\nERROR: Could not compress backup file, see previous messages"
-	exit
+	echo -e "\nERROR: Could not compress backup file, see previous messages" >&2
+	exit 1
 fi
 
-echo -e "\nBackup Completed - ${DUMPDIR}"
+echo -e "\nBackup Completed:\n${DUMPFILE}.gz"
 
 exit
 
