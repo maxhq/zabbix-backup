@@ -20,6 +20,7 @@
 # HISTORY
 #     0.7.1 (2015-01-27)
 #         NEW: Parsing of commandline arguments implemented
+#         REV: Stop if database password is wrong
 # 
 #     0.7.0 (2014-10-02)
 #         ENH: Complete overhaul to make script work with lots of Zabbix versions
@@ -164,7 +165,9 @@ mkdir -p "${DUMPDIR}"
 
 # Read table list from database
 echo "Fetching list of existing tables..."
-DB_TABLES=$($MYSQL_BATCH -e "SELECT table_name FROM information_schema.tables WHERE table_schema = '$DBNAME'" | sort)
+DB_TABLES=$($MYSQL_BATCH -e "SELECT table_name FROM information_schema.tables WHERE table_schema = '$DBNAME'" 2>&1)
+if [ $? -ne 0 ]; then echo -e "ERROR while trying to access database:\n$DB_TABLES" 2>&1; exit 1; fi
+DB_TABLES=$(echo "$DB_TABLES" | sort)
 DB_TABLE_NUM=$(echo "$DB_TABLES" | wc -l)
 
 PROCESSED_DATA_TABLES=()
