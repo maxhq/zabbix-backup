@@ -49,7 +49,7 @@
 # DEFAULT VALUES
 #
 # following will store the backup in a subdirectory of the current directory
-DUMPDIR="$(dirname "$(realpath -s "$0")")"
+DUMPDIR="$(pwd)"
 DBHOST="127.0.0.1"
 DBNAME="zabbix"
 DBUSER="zabbix"
