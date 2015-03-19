@@ -22,7 +22,7 @@
 #         NEW: Parsing of commandline arguments implemented
 #         ENH: Try reverse lookup of IPs and include hostname/IP in filename
 #         REV: Stop if database password is wrong
-# 
+#
 #     0.7.0 (2014-10-02)
 #         ENH: Complete overhaul to make script work with lots of Zabbix versions
 #
@@ -49,11 +49,14 @@
 # DEFAULT VALUES
 #
 # following will store the backup in a subdirectory of the current directory
-DUMPDIR="$(dirname "$(realpath -s "$0")")"
+DUMPDIR="$(pwd)"
 DBHOST="127.0.0.1"
 DBNAME="zabbix"
 DBUSER="zabbix"
 DBPASS=""
+QUIET="no"
+REVERSELOOKUP="yes"
+GENERATIONSTOKEEP=0
 
 #
 # SHOW HELP
@@ -68,12 +71,19 @@ OPTIONS
 	 -d database  - Zabbix database name (default: $DBNAME)
 	 -u user      - MySQL user to access Zabbix database (default: $DBUSER)
 	 -p password  - MySQL user password (specify "-" for a prompt)
+	 -c file      - Use credentials from mysql options file. Overrides
+	                any -u and -p options.
 	 -o outputdir - output directory for the MySQL dump file
-	                (default: $DUMPDIR) 
-
+	                (default: $DUMPDIR)
+	 -r num       - Rotate backups, keeping up to num generations in the
+	                output directory. Uses file name and data to match.
+	 -q           - No output on succesful backup. For crontab use.
+	 -n           - Skip reverse lookup of IP address for host.
 EXAMPLE
 	$(basename $0) -h 1.2.3.4 -d zabbixdb -u zabbix -p test
 	$(basename $0) -d zabbixdb -u zabbix -p - -o /tmp
+	$(basename $0) -h 1.2.3.4 -d zabbixdb -c /etc/mysql-backup-credentials.cnf
+
 EOF
 	exit 1
 fi	
@@ -81,52 +91,73 @@ fi
 #
 # PARSE COMMAND LINE ARGUMENTS
 #
-while getopts ":h:d:u:p:o:" opt; do
+while getopts ":h:d:u:p:o:r:qnc:" opt; do
   case $opt in
     h)  DBHOST="$OPTARG" ;;
     d)  DBNAME="$OPTARG" ;;
     u)  DBUSER="$OPTARG" ;;
     p)  DBPASS="$OPTARG" ;;
     o)  DUMPDIR="$OPTARG" ;;
+    n)  REVERSELOOKUP="no" ;;
+    q)  QUIET="yes" ;;
+    r)  GENERATIONSTOKEEP=$(printf '%.0f' "$OPTARG") ;;
+    c)  CNFFILE="$OPTARG" ;;
     \?) echo "Invalid option: -$OPTARG" >&2; exit 1 ;;
     :)  echo "Option -$OPTARG requires an argument" >&2; exit 1 ;;
   esac
 done
 
-if [ "$DBPASS" = "" ]; then
-	echo "No password given" >&2
-	exit 1
-fi
+if [ "$CNFFILE" = "" ]; then
+	if [ "$DBPASS" = "" ]; then
+		echo "No password given" >&2
+		exit 1
+	fi
 
-if [ "$DBPASS" = "-" ]; then
-	read -s -p "Enter MySQL password for user '$DBUSER' (input will be hidden): " DBPASS
-	echo ""
+	if [ "$DBPASS" = "-" ]; then
+		read -s -p "Enter MySQL password for user '$DBUSER' (input will be hidden): " DBPASS
+		echo ""
+	fi
+else
+	if [ ! -r "${CNFFILE}" ]; then
+		echo "Cannot read configuration file ${CNFFILE}" >&2
+		exit 1
+	fi
 fi
 
 #
 # CONSTANTS
 #
-MYSQL_CONN="-h ${DBHOST} -u ${DBUSER} -p${DBPASS} ${DBNAME}"
-MYSQL_BATCH="mysql --batch --silent $MYSQL_CONN"
+if [ "${CNFFILE}" == "" ]; then
+	MYSQL_CONN="-h ${DBHOST} -u ${DBUSER} -p${DBPASS} ${DBNAME}"
+else
+	MYSQL_CONN="--defaults-extra-file=\"${CNFFILE}\" -h ${DBHOST}"
+fi
 
-# Try resolving a given host ip
+# --defaults-extra-file must be first parameter
+MYSQL_BATCH="mysql $MYSQL_CONN --batch --silent"
+TABLES_CMD="${MYSQL_BATCH} -e \"SELECT table_name FROM information_schema.tables WHERE table_schema = '$DBNAME'\""
+
 DBHOSTNAME="$DBHOST"
-newHostname=$(dig +noall +answer -x $DBHOST | sed -r 's/((\S+)\s+)+([^\.]+)\..*/\3/')
-test \! -z "$newHostname" && DBHOSTNAME="$newHostname"
-
-DUMPFILEBASE="zabbix_${DBHOSTNAME}_$(date +%Y%m%d-%H%M).sql"
+if [ "${REVERSELOOKUP}" == "yes" ]; then
+	# Try resolving a given host ip
+	newHostname=$(dig +noall +answer -x $DBHOST | sed -r 's/((\S+)\s+)+([^\.]+)\..*/\3/')
+	test \! -z "$newHostname" && DBHOSTNAME="$newHostname"
+fi
+DUMPFILENAME_PREFIX="zabbix_cfg_${DBHOSTNAME}"
+DUMPFILEBASE="${DUMPFILENAME_PREFIX}_$(date +%Y%m%d-%H%M).sql"
 DUMPFILE="${DUMPDIR}/${DUMPFILEBASE}"
 
 #
 # CONFIG DUMP
 #
-cat <<EOF
-Configuration:
- - host:     $DBHOST ($DBHOSTNAME)
- - database: $DBNAME
- - user:     $DBUSER
-EOF
-
+if [ "${QUIET}" == "no" ]; then
+	cat <<-EOF
+	Configuration:
+	 - host:     $DBHOST ($DBHOSTNAME)
+	 - database: $DBNAME
+	 - user:     $DBUSER
+	EOF
+fi
 #
 # FUNCTIONS
 #
@@ -149,14 +180,14 @@ fi
 
 #
 # READ TABLE LIST from __DATA__ section at the end of this script
-# (http://stackoverflow.com/a/3477269/2983301) 
+# (http://stackoverflow.com/a/3477269/2983301)
 #
 DATA_TABLES=()
 while read line; do
 	table=$(echo "$line" | cut -d" " -f1)
 	echo "$line" | cut -d" " -f5 | grep -qi "DATA"
 	test $? -eq 0 && DATA_TABLES+=($table)
-done < <(sed '0,/^__DATA__$/d' "$0" | tr -s " ") 
+done < <(sed '0,/^__DATA__$/d' "$0" | tr -s " ")
 
 # paranoid check
 if [ ${#DATA_TABLES[@]} -lt 5 ]; then
@@ -170,8 +201,8 @@ fi
 mkdir -p "${DUMPDIR}"
 
 # Read table list from database
-echo "Fetching list of existing tables..."
-DB_TABLES=$($MYSQL_BATCH -e "SELECT table_name FROM information_schema.tables WHERE table_schema = '$DBNAME'" 2>&1)
+[ "${QUIET}" == "no" ] && echo "Fetching list of existing tables..."
+DB_TABLES=$(eval ${TABLES_CMD} 2>&1)
 if [ $? -ne 0 ]; then echo -e "ERROR while trying to access database:\n$DB_TABLES" 2>&1; exit 1; fi
 DB_TABLES=$(echo "$DB_TABLES" | sort)
 DB_TABLE_NUM=$(echo "$DB_TABLES" | wc -l)
@@ -179,7 +210,7 @@ DB_TABLE_NUM=$(echo "$DB_TABLES" | wc -l)
 PROCESSED_DATA_TABLES=()
 i=0
 
-echo "Starting table backups..."
+[ "${QUIET}" == "no" ] && echo "Starting table backups..."
 while read table; do
 	# large data tables: only store schema
 	if elementIn "$table" "${DATA_TABLES[@]}"; then
@@ -189,33 +220,50 @@ while read table; do
 	else
 		dump_opt="--extended-insert=FALSE"
 	fi
-	mysqldump --routines --opt --single-transaction --skip-lock-tables \
-		$dump_opt $MYSQL_CONN --tables ${table} >>"${DUMPFILE}"
-
-	# show percentage
-	i=$((i+1)); i_percent=$(($i * 100 / $DB_TABLE_NUM))
-	if [ $(($i_percent % 12)) -eq 0 ]; then
-		echo -n "${i_percent}%"
-	else
-		if [ $(($i_percent % 2)) -eq 0 ]; then echo -n "."; fi
+	TABLE_DUMP_CMD="mysqldump ${MYSQL_CONN} --routines --opt --single-transaction --skip-lock-tables $dump_opt $DBNAME --tables ${table}"
+	eval ${TABLE_DUMP_CMD} >> "${DUMPFILE}"
+	if [[ $? != 0 ]]; then
+		echo "Failed dumping table ${table}. Aborting." >&2;
+		exit 1;
 	fi
-done <<<"$DB_TABLES" 
+	if [ "${QUIET}" == "no" ]; then
+		# show percentage
+		i=$((i+1)); i_percent=$(($i * 100 / $DB_TABLE_NUM))
+		if [ $(($i_percent % 12)) -eq 0 ]; then
+			echo -n "${i_percent}%"
+		else
+			if [ $(($i_percent % 2)) -eq 0 ]; then echo -n "."; fi
+		fi
+	fi
+done <<<"$DB_TABLES"
 
-echo -e "\n"
-echo "For the following large tables only the schema (without data) was stored:"
-for table in "${PROCESSED_DATA_TABLES[@]}"; do echo " - $table"; done
-
-echo 
-echo "Compressing backup file..."
+if [ "${QUIET}" == "no" ]; then
+	echo -e "\n"
+	echo "For the following large tables only the schema (without data) was stored:"
+	for table in "${PROCESSED_DATA_TABLES[@]}"; do echo " - $table"; done
+	
+	echo
+	echo "Compressing backup file..."
+fi
 gzip -f "${DUMPFILE}"
 if [ $? -ne 0 ]; then
 	echo -e "\nERROR: Could not compress backup file, see previous messages" >&2
 	exit 1
 fi
 
-echo -e "\nBackup Completed:\n${DUMPFILE}.gz"
+[ "${QUIET}" == "no" ] && echo -e "\nBackup Completed:\n${DUMPFILE}.gz"
 
-exit
+if [ ${GENERATIONSTOKEEP} -gt 0 ]; then
+	[ "${QUIET}" == "no" ] && echo "Removing old backups, keeping up to ${GENERATIONSTOKEEP}"
+	REMOVE_OLD_CMD="cd ${DUMPDIR} && ls -t ${DUMPFILENAME_PREFIX}* | /usr/bin/awk \"NR>${GENERATIONSTOKEEP}\" | xargs rm -f "
+	eval ${REMOVE_OLD_CMD}
+	if [ $? -ne 0 ]; then
+		echo "ERROR: Could not rotate old backups" >&2
+		exit 1
+	fi
+fi
+
+exit 0
 
 ################################################################################
 # List of all known table names and a flag indicating data (=large) tables
