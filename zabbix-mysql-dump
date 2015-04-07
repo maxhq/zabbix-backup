@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+#
 # NAME
 #     zabbix-mysql-backupconf.sh - Configuration Backup for Zabbix 2.0 w/MySQL
 #
@@ -16,8 +17,12 @@
 #      - Petr Jendrejovsky
 #      - Jonathan Bayer
 #      - Andreas Niedermann (dre-)
+#      - Mișu Moldovan
 #
 # HISTORY
+#     0.7.2 (2015-04-07)
+#         ENH: Bash related fixes.
+#
 #     0.7.1 (2015-01-27)
 #         NEW: Parsing of commandline arguments implemented
 #         ENH: Try reverse lookup of IPs and include hostname/IP in filename
@@ -49,7 +54,7 @@
 # DEFAULT VALUES
 #
 # following will store the backup in a subdirectory of the current directory
-DUMPDIR="$(dirname "$(realpath -s "$0")")"
+DUMPDIR="$(dirname "$(realpath -s "$BASH_SOURCE")")"
 DBHOST="127.0.0.1"
 DBNAME="zabbix"
 DBUSER="zabbix"
@@ -61,7 +66,7 @@ DBPASS=""
 if [ -z "$1" ]; then
 	cat <<EOF
 USAGE
-	$(basename $0) [options]
+	$(basename $BASH_SOURCE) [options]
 	
 OPTIONS
 	 -h host      - hostname/IP of MySQL server (default: $DBHOST)
@@ -72,8 +77,8 @@ OPTIONS
 	                (default: $DUMPDIR) 
 
 EXAMPLE
-	$(basename $0) -h 1.2.3.4 -d zabbixdb -u zabbix -p test
-	$(basename $0) -d zabbixdb -u zabbix -p - -o /tmp
+	$(basename $BASH_SOURCE) -h 1.2.3.4 -d zabbixdb -u zabbix -p test
+	$(basename $BASH_SOURCE) -d zabbixdb -u zabbix -p - -o /tmp
 EOF
 	exit 1
 fi	
@@ -156,7 +161,7 @@ while read line; do
 	table=$(echo "$line" | cut -d" " -f1)
 	echo "$line" | cut -d" " -f5 | grep -qi "DATA"
 	test $? -eq 0 && DATA_TABLES+=($table)
-done < <(sed '0,/^__DATA__$/d' "$0" | tr -s " ") 
+done < <(sed '0,/^__DATA__$/d' "$BASH_SOURCE" | tr -s " ")
 
 # paranoid check
 if [ ${#DATA_TABLES[@]} -lt 5 ]; then
