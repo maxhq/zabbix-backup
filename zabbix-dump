@@ -320,7 +320,7 @@ if [ $? -eq 0 ]; then
 	# version string is like: 02030015
 	re='(.*)([0-9]{2})([0-9]{4})'
 	if [[ $DB_VER =~ $re ]]; then
-		VERSION="_db-${BASH_REMATCH[1]}.$(( ${BASH_REMATCH[2]} + 0 )).$(( ${BASH_REMATCH[3]} + 0 ))"
+		VERSION="_db-${DBTYPE}-${BASH_REMATCH[1]}.$(( ${BASH_REMATCH[2]} + 0 )).$(( ${BASH_REMATCH[3]} + 0 ))"
 	fi
 fi
 
