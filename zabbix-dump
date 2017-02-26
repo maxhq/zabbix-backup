@@ -129,20 +129,20 @@ fi
 DB_GIVEN=0
 while getopts ":t:h:d:u:p:o:r:c:x0qn" opt; do
 	case $opt in
-	    t)  DBTYPE="$OPTARG" ;;
-		h)  DBHOST="$OPTARG" ;;
-		d)  DBNAME="$OPTARG"; DB_GIVEN=1 ;;
-		u)  DBUSER="$OPTARG" ;;
-		p)  DBPASS="$OPTARG" ;;
-		c)  CNFFILE="$OPTARG" ;;
-		o)  DUMPDIR="$OPTARG" ;;
-		r)  GENERATIONSTOKEEP=$(printf '%.0f' "$OPTARG") ;;
-		x)  COMPRESSION="xz" ;;
-		0)  COMPRESSION="" ;;
-		n)  REVERSELOOKUP="no" ;;
-		q)  QUIET="yes" ;;
-		\?) echo "Invalid option: -$OPTARG" >&2; exit 1 ;;
-		:)  echo "Option -$OPTARG requires an argument" >&2; exit 1 ;;
+        t)  DBTYPE="$OPTARG" ;;
+        h)  DBHOST="$OPTARG" ;;
+        d)  DBNAME="$OPTARG"; DB_GIVEN=1 ;;
+        u)  DBUSER="$OPTARG" ;;
+        p)  DBPASS="$OPTARG" ;;
+        c)  CNFFILE="$OPTARG" ;;
+        o)  DUMPDIR="$OPTARG" ;;
+        r)  GENERATIONSTOKEEP=$(printf '%.0f' "$OPTARG") ;;
+        x)  COMPRESSION="xz" ;;
+        0)  COMPRESSION="" ;;
+        n)  REVERSELOOKUP="no" ;;
+        q)  QUIET="yes" ;;
+        \?) echo "Invalid option: -$OPTARG" >&2; exit 1 ;;
+        :)  echo "Option -$OPTARG requires an argument" >&2; exit 1 ;;
 	esac
 done
 
