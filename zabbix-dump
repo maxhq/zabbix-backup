@@ -41,10 +41,12 @@
 # Instead, use command line parameters or a config file to specify options.
 #
 DUMPDIR="$PWD"
+DBTYPE="mysql"
 DBHOST="127.0.0.1"
 DBNAME="zabbix"
 DBUSER="zabbix"
 DBPASS=""
+DBPORT="5432"
 COMPRESSION="gz"
 QUIET="no"
 REVERSELOOKUP="yes"
@@ -59,6 +61,10 @@ USAGE
 	$(basename $BASH_SOURCE) [options]
 
 OPTIONS
+    -t DATABASE_TYPE
+        Zabbix database type (mysql or psql)
+        Default: $DBTYPE
+
 	-h HOST
 		Hostname/IP of MySQL server.
 		Default: $DBHOST
@@ -68,19 +74,19 @@ OPTIONS
 		Default: $DBNAME
 
 	-u USER
-		MySQL user to access Zabbix database.
+		User to access Zabbix database.
 		Default: $DBUSER
 
 	-p PASSWORD
-		MySQL user password (specify "-" for a prompt).
+		User password (specify "-" for a prompt).
 		Default: no password
 
 	-o DIR
-		Save Zabbix MySQL dumps to DIR.
+		Save Zabbix database dumps to DIR.
 		Default: $DUMPDIR
 
 	-c FILE
-		Use FILE for MySQL options (passed via --defaults-extra-file).
+		Use FILE for MySQL (only) options (passed via --defaults-extra-file).
 		PLEASE NOTE:
 		mysqldump needs the database to be specified via command line.
 		So the first "database" options found in the config file is
@@ -108,7 +114,7 @@ OPTIONS
 		Quiet mode: no output except for errors (for batch/crontab use).
 
 EXAMPLES
-	$(basename $BASH_SOURCE) -h 1.2.3.4 -d zabbixdb -u zabbix -p test
+	$(basename $BASH_SOURCE) -t psql -h 1.2.3.4 -d zabbixdb -u zabbix -p test
 	$(basename $BASH_SOURCE) -u zabbix -p - -o /tmp
 	$(basename $BASH_SOURCE) -c /etc/mysql/mysql.cnf
 	$(basename $BASH_SOURCE) -c /etc/mysql/mysql.cnf -d zabbixdb
@@ -121,8 +127,9 @@ fi
 # PARSE COMMAND LINE ARGUMENTS
 #
 DB_GIVEN=0
-while getopts ":h:d:u:p:o:r:c:x0qn" opt; do
+while getopts ":t:h:d:u:p:o:r:c:x0qn" opt; do
 	case $opt in
+	    t)  DBTYPE="$OPTARG" ;;
 		h)  DBHOST="$OPTARG" ;;
 		d)  DBNAME="$OPTARG"; DB_GIVEN=1 ;;
 		u)  DBUSER="$OPTARG" ;;
@@ -141,7 +148,7 @@ done
 
 # Password prompt
 if [ "$DBPASS" = "-" ]; then
-	read -s -p "Enter MySQL password for user '$DBUSER' (input will be hidden): " DBPASS
+	read -s -p "Enter database password for user '$DBUSER' (input will be hidden): " DBPASS
 	echo ""
 fi
 
@@ -164,15 +171,27 @@ fi
 #
 SUFFIX=""; test ! -z $COMPRESSION && SUFFIX=".${COMPRESSION}"
 
-MYSQL_OPTS=()
-[ ! -z "$CNFFILE" ] && MYSQL_OPTS=("${MYSQL_OPTS[@]}" --defaults-extra-file="$CNFFILE")
-[ ! -z "$DBHOST" ] && MYSQL_OPTS=("${MYSQL_OPTS[@]}" -h $DBHOST)
-[ ! -z "$DBUSER" ] && MYSQL_OPTS=("${MYSQL_OPTS[@]}" -u $DBUSER)
-[ ! -z "$DBPASS" ] && MYSQL_OPTS=("${MYSQL_OPTS[@]}" -p"$DBPASS")
+DB_OPTS=()
+[ ! -z "$DBHOST" ] && DB_OPTS=("${DB_OPTS[@]}" -h $DBHOST)
+case $DBTYPE in
+    mysql)
+        [ ! -z "$CNFFILE" ] && DB_OPTS=("${DB_OPTS[@]}" --defaults-extra-file="$CNFFILE")
+        [ ! -z "$DBUSER" ] && DB_OPTS=("${DB_OPTS[@]}" -u $DBUSER)
+        [ ! -z "$DBPASS" ] && DB_OPTS=("${DB_OPTS[@]}" -p"$DBPASS")
 
-MYSQL_OPTS_BATCH=("${MYSQL_OPTS[@]}" --batch --silent)
-[ ! -z "$DBNAME" ] && MYSQL_OPTS_BATCH=("${MYSQL_OPTS_BATCH[@]}" -D $DBNAME)
-
+        DB_OPTS_BATCH=("${DB_OPTS[@]}" --batch --silent)
+        [ ! -z "$DBNAME" ] && DB_OPTS_BATCH=("${DB_OPTS_BATCH[@]}" -D $DBNAME)
+        ;;
+    psql)
+        [ ! -z "$DBUSER" ] && DB_OPTS=("${DB_OPTS[@]}" -U $DBUSER)
+        if [ ! -z "$DBPASS" ]; then
+           echo "$DBHOST:$DBPORT:$DBNAME:$DBUSER:$DBPASS" >> $HOME/.pgpass
+           chmod 600 $HOME/.pgpass
+        fi
+        DB_OPTS_BATCH=("${DB_OPTS[@]}" -Atw)
+        [ ! -z "$DBNAME" ] && DB_OPTS_BATCH=("${DB_OPTS_BATCH[@]}" -d $DBNAME)
+        ;;
+esac
 # Log file for errors
 ERRORLOG=$(mktemp)
 
@@ -192,10 +211,11 @@ fi
 if [ "$QUIET" == "no" ]; then
 	cat <<-EOF
 	Configuration:
-	 - host:     $DBHOST ($DBHOSTNAME)
-	 - database: $DBNAME
-	 - user:     $DBUSER
-	 - output:   $DUMPDIR
+	 - database type: $DBTYPE
+	 - host:          $DBHOST ($DBHOSTNAME)
+	 - database:      $DBNAME
+	 - user:          $DBUSER
+	 - output:        $DUMPDIR
 
 EOF
 fi
@@ -210,16 +230,41 @@ elementIn () {
 	for e in "${@:2}"; do [[ "$e" == "$1" ]] && return 0; done
 	return 1
 }
-
+check_binary() {
+    if [ ! -x "/usr/bin/$1" ]; then
+        echo "$1 not found." >&2
+        case $1 in
+            mysql)
+                echo "(with Debian, \"apt-get install mysql-client\" will help)" >&2
+                exit 1
+                ;;
+            psql)
+                echo "(with Debian, \"apt-get install postgresql-client\" will help)" >&2
+                exit 1
+                ;;
+        esac
+    fi
+}
+clean_psql_pass() {
+    if [ $DBTYPE = "psql" ]; then
+        sed -i "0,/$DBHOST:$DBPORT:$DBNAME:$DBUSER:$DBPASS/d" $HOME/.pgpass
+    fi
+}
 #
 # CHECKS
 #
-if [ ! -x /usr/bin/mysqldump ]; then
-	echo "mysqldump not found." >&2
-	echo "(with Debian, \"apt-get install mysql-client\" will help)" >&2
-	exit 1
-fi
-
+case $DBTYPE in
+    mysql)
+        check_binary mysqldump
+        ;;
+    psql)
+        check_binary pg_dump
+        ;;
+    *)
+        echo "Sorry, don't support database type '$DBTYPE'"
+        exit 1
+        ;;
+esac
 #
 # READ TABLE LIST from __DATA__ section at the end of this script
 # (http://stackoverflow.com/a/3477269/2983301)
@@ -242,14 +287,35 @@ fi
 #
 # Read table list from database
 [ "$QUIET" == "no" ] && echo "Fetching list of existing tables..."
-DB_TABLES=$(mysql "${MYSQL_OPTS_BATCH[@]}" -e "SELECT table_name FROM information_schema.tables WHERE table_schema = '$DBNAME'" 2>$ERRORLOG)
-if [ $? -ne 0 ]; then echo "ERROR while trying to access database:" 2>&1; cat $ERRORLOG 2>&1; exit 1; fi
+case $DBTYPE in
+    mysql)
+        DB_TABLES=$(mysql "${DB_OPTS_BATCH[@]}" -e "SELECT table_name FROM information_schema.tables WHERE table_schema = '$DBNAME'" 2>$ERRORLOG)
+        ;;
+    psql)
+        DB_TABLES=$(psql "${DB_OPTS_BATCH[@]}" -c "SELECT table_name FROM information_schema.tables  WHERE table_schema='public' AND table_type='BASE TABLE'" 2>$ERRORLOG)
+        ;;
+esac
+if [ $? -ne 0 ]; then
+    echo "ERROR while trying to access database:" 2>&1;
+    cat $ERRORLOG 2>&1;
+    clean_psql_pass
+    exit 1;
+fi
+
 DB_TABLES=$(echo "$DB_TABLES" | sort)
 DB_TABLE_NUM=$(echo "$DB_TABLES" | wc -l)
 
+
 # Query Zabbix database version
 VERSION=""
-DB_VER=$(mysql "${MYSQL_OPTS_BATCH[@]}" -N -e "select optional from dbversion;" 2>/dev/null)
+case $DBTYPE in
+    mysql)
+        DB_VER=$(mysql "${DB_OPTS_BATCH[@]}" -N -e "select optional from dbversion;" 2>/dev/null)
+        ;;
+    psql)
+        DB_VER=$(psql "${DB_OPTS_BATCH[@]}" -c "select optional from dbversion;" 2>/dev/null)
+        ;;
+esac
 if [ $? -eq 0 ]; then
 	# version string is like: 02030015
 	re='(.*)([0-9]{2})([0-9]{4})'
@@ -269,33 +335,52 @@ i=0
 mkdir -p "${DUMPDIR}"
 
 [ "$QUIET" == "no" ] && echo "Starting table backups..."
-while read table; do
-	# large data tables: only store schema
-	if elementIn "$table" "${DATA_TABLES[@]}"; then
-		dump_opt="--no-data"
-		PROCESSED_DATA_TABLES+=($table)
-	# configuration tables: full dump
-	else
-		dump_opt="--extended-insert=FALSE"
-	fi
+case $DBTYPE in
+    mysql)
+        while read table; do
+            # large data tables: only store schema
+            if elementIn "$table" "${DATA_TABLES[@]}"; then
+                dump_opt="--no-data"
+                PROCESSED_DATA_TABLES+=($table)
+            # configuration tables: full dump
+            else
+                dump_opt="--extended-insert=FALSE"
+            fi
 
-	mysqldump "${MYSQL_OPTS[@]}" \
-		--routines --opt --single-transaction --skip-lock-tables \
-		$dump_opt \
-		$DBNAME --tables ${table} >> "$DUMPFILE" 2>$ERRORLOG
+            mysqldump "${DB_OPTS[@]}" \
+                --routines --opt --single-transaction --skip-lock-tables \
+                $dump_opt \
+                $DBNAME --tables ${table} >> "$DUMPFILE" 2>$ERRORLOG
 
-	if [ $? -ne 0 ]; then echo -e "\nERROR: Could not backup table ${table}:" >&2; cat $ERRORLOG >&2; exit 1; fi
+            if [ $? -ne 0 ]; then echo -e "\nERROR: Could not backup table ${table}:" >&2; cat $ERRORLOG >&2; exit 1; fi
 
-	if [ "$QUIET" == "no" ]; then
-		# show percentage
-		i=$((i+1)); i_percent=$(($i * 100 / $DB_TABLE_NUM))
-		if [ $(($i_percent % 12)) -eq 0 ]; then
-			echo -n "${i_percent}%"
-		else
-			if [ $(($i_percent % 2)) -eq 0 ]; then echo -n "."; fi
-		fi
-	fi
-done <<<"$DB_TABLES"
+            if [ "$QUIET" == "no" ]; then
+                # show percentage
+                i=$((i+1)); i_percent=$(($i * 100 / $DB_TABLE_NUM))
+                if [ $(($i_percent % 12)) -eq 0 ]; then
+                    echo -n "${i_percent}%"
+                else
+                    if [ $(($i_percent % 2)) -eq 0 ]; then echo -n "."; fi
+                fi
+            fi
+        done <<<"$DB_TABLES"
+        ;;
+    psql)
+        while read table; do
+            if elementIn "$table" "${DATA_TABLES[@]}"; then
+                dump_opt="--exclude-table-data=$table"
+                PROCESSED_DATA_TABLES+=($dump_opt)
+            fi
+        done <<<"$DB_TABLES"
+        pg_dump "${DB_OPTS[@]}" ${PROCESSED_DATA_TABLES[@]} > "$DUMPFILE" 2>$ERRORLOG
+        if [ $? -ne 0 ]; then
+            echo -e "\nERROR: Could not backup database." >&2
+            cat $ERRORLOG >&2
+            clean_psql_pass
+            exit 1
+        fi
+        ;;
+esac
 
 rm $ERRORLOG
 
@@ -306,7 +391,6 @@ if [ "$QUIET" == "no" ]; then
 	echo -e "\n"
 	echo "For the following large tables only the schema (without data) was stored:"
 	for table in "${PROCESSED_DATA_TABLES[@]}"; do echo " - $table"; done
-
 	echo
 	echo "Compressing backup file..."
 fi
@@ -316,6 +400,7 @@ if [ "$COMPRESSION" == "gz" ]; then gzip -f "$DUMPFILE"; EXITCODE=$?; fi
 if [ "$COMPRESSION" == "xz" ]; then xz   -f "$DUMPFILE"; EXITCODE=$?; fi
 if [ $EXITCODE -ne 0 ]; then
 	echo -e "\nERROR: Could not compress backup file, see previous messages" >&2
+	clean_psql_pass
 	exit 1
 fi
 
@@ -330,9 +415,12 @@ if [ $GENERATIONSTOKEEP -gt 0 ]; then
 	eval ${REMOVE_OLD_CMD}
 	if [ $? -ne 0 ]; then
 		echo "ERROR: Could not rotate old backups" >&2
+		clean_psql_pass
 		exit 1
 	fi
 fi
+
+clean_psql_pass
 
 exit 0
 
