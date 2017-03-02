@@ -185,8 +185,9 @@ case $DBTYPE in
     psql)
         [ ! -z "$DBUSER" ] && DB_OPTS=("${DB_OPTS[@]}" -U $DBUSER)
         if [ ! -z "$DBPASS" ]; then
-           echo "$DBHOST:$DBPORT:$DBNAME:$DBUSER:$DBPASS" >> $HOME/.pgpass
-           chmod 600 $HOME/.pgpass
+           PGPASSFILE=$(mktemp -u)
+           echo "$DBHOST:$DBPORT:$DBNAME:$DBUSER:$DBPASS" > $PGPASSFILE
+           chmod 600 $PGPASSFILE
         fi
         DB_OPTS_BATCH=("${DB_OPTS[@]}" -Atw)
         [ ! -z "$DBNAME" ] && DB_OPTS_BATCH=("${DB_OPTS_BATCH[@]}" -d $DBNAME)
@@ -246,8 +247,8 @@ check_binary() {
     fi
 }
 clean_psql_pass() {
-    if [ $DBTYPE = "psql" ]; then
-        sed -i "0,/$DBHOST:$DBPORT:$DBNAME:$DBUSER:$DBPASS/d" $HOME/.pgpass
+    if [ $DBTYPE = "psql" -a -n "$PGPASSFILE" ]; then
+       rm -f $PGPASSFILE
     fi
 }
 #
