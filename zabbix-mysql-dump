@@ -214,7 +214,7 @@ elementIn () {
 #
 # CHECKS
 #
-if [ ! -x `which mysqldump` ]; then
+if [ ! -x $(which mysqldump) ]; then
 	echo "mysqldump not found." >&2
 	echo "(with Debian, \"apt-get install mysql-client\" will help)" >&2
 	exit 1
