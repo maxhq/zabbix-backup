@@ -692,7 +692,7 @@ item_application_prototype 2.5.0    - 4.4.4
 item_condition             2.3.0    - 4.4.4
 item_discovery             1.9.0    - 4.4.4
 item_preproc               3.4.0    - 4.4.4
-item_rtdata                4.4.0    - 4.4.4     SCHEMAONLY
+item_rtdata                4.4.0    - 4.4.4
 items                      1.3.1    - 4.4.4
 items_applications         1.3.1    - 4.4.4
 lld_macro_path             4.2.0    - 4.4.4
