@@ -552,7 +552,10 @@ case $DBTYPE in
 
         [ -n "$DBSCHEMA" ] && DUMP_OPTS=("${DUMP_OPTS[@]}" -n $DBSCHEMA)
 
-        pg_dump "${DB_OPTS[@]}" "${DUMP_OPTS[@]}" -d $DBNAME > "$DUMPFILE" 2>$ERRORLOG
+		# exclude timescaledb data
+		DUMP_OPTS+=(--exclude-table-data="_timescaledb_internal.*")
+        
+		pg_dump "${DB_OPTS[@]}" "${DUMP_OPTS[@]}" -d $DBNAME > "$DUMPFILE" 2>$ERRORLOG
 
         if [ $? -ne 0 ]; then
             echo $'\nERROR: Could not backup database.\n' >&2
