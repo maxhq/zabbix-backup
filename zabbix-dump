@@ -438,7 +438,7 @@ case $DBTYPE in
         DB_TABLES=$(mysql "${DB_OPTS_BATCH[@]}" -e "SELECT table_name FROM information_schema.tables WHERE table_schema = '$DBNAME'" 2>$ERRORLOG)
         ;;
     psql)
-        DB_TABLES=$(psql "${DB_OPTS_BATCH[@]}" -c "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_catalog='$DBNAME' AND table_type='BASE TABLE'" 2>$ERRORLOG)
+        DB_TABLES=$(psql --no-psqlrc "${DB_OPTS_BATCH[@]}" -c "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_catalog='$DBNAME' AND table_type='BASE TABLE'" 2>$ERRORLOG)
         ;;
 esac
 if [ $? -ne 0 ]; then
@@ -480,7 +480,7 @@ case $DBTYPE in
         DB_VER=$(mysql "${DB_OPTS_BATCH[@]}" -N -e "select optional from dbversion;" 2>/dev/null)
         ;;
     psql)
-        DB_VER=$(psql "${DB_OPTS_BATCH[@]}" -c "select optional from dbversion;" 2>/dev/null)
+        DB_VER=$(psql --no-psqlrc "${DB_OPTS_BATCH[@]}" -c "select optional from dbversion;" 2>/dev/null)
         ;;
 esac
 if [ $? -eq 0 ]; then
