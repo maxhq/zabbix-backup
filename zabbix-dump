@@ -242,9 +242,9 @@ if [[ "${READ_ZBX_CONFIG}" == "yes" && -f "${ZBX_CONFIG}" && -r "${ZBX_CONFIG}" 
     # > If set to localhost, socket is used for MySQL.
     # > If set to empty string, socket is used for PostgreSQL.
     if [[ ( "$DBTYPE" == "mysql" && "$DBHOST" == "localhost" ) || ( "$DBTYPE" == "psql" && "$DBHOST" == "" ) ]]; then
-        [ "$DBTYPE" == "mysql" ] && searchstr="mysql"
+        [ "$DBTYPE" == "mysql" ] && searchstr="mysqld.sock"
         [ "$DBTYPE" == "psql" ] && searchstr="postgres"
-        sock=$(netstat -axn | grep -m1 "$searchstr" | sed -r 's/^.*\s+([^ ]+)$/\1/')
+        sock=$(netstat -lxn | grep -m1 "$searchstr" | sed -r 's/^.*\s+([^ ]+)$/\1/')
         if [[ -n "$sock" && -S $sock ]]; then DBSOCKET="$sock"; DBHOST=""; fi
     else
         DBSOCKET="$(/usr/bin/awk -F'=' '/^DBSocket/{ print $2 }' "${ZBX_CONFIG}")"
