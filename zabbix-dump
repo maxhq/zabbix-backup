@@ -610,183 +610,183 @@ exit 0
 #
 
 __DATA__
-acknowledges               1.3.1    - 4.4.4     SCHEMAONLY
-actions                    1.3.1    - 4.4.4
-alerts                     1.3.1    - 4.4.4     SCHEMAONLY
-application_discovery      2.5.0    - 4.4.4
-application_prototype      2.5.0    - 4.4.4
-application_template       2.1.0    - 4.4.4
-applications               1.3.1    - 4.4.4
-auditlog                   1.3.1    - 4.4.4     SCHEMAONLY
-auditlog_details           1.7      - 4.4.4     SCHEMAONLY
+acknowledges               1.3.1    - 5.0.2     SCHEMAONLY
+actions                    1.3.1    - 5.0.2
+alerts                     1.3.1    - 5.0.2     SCHEMAONLY
+application_discovery      2.5.0    - 5.0.2
+application_prototype      2.5.0    - 5.0.2
+application_template       2.1.0    - 5.0.2
+applications               1.3.1    - 5.0.2
+auditlog                   1.3.1    - 5.0.2     SCHEMAONLY
+auditlog_details           1.7      - 5.0.2     SCHEMAONLY
 autoreg                    1.3.1    - 1.3.4
-autoreg_host               1.7      - 4.4.4
-conditions                 1.3.1    - 4.4.4
-config                     1.3.1    - 4.4.4
-config_autoreg_tls         4.4.0    - 4.4.4
-corr_condition             3.2.0    - 4.4.4
-corr_condition_group       3.2.0    - 4.4.4
-corr_condition_tag         3.2.0    - 4.4.4
-corr_condition_tagpair     3.2.0    - 4.4.4
-corr_condition_tagvalue    3.2.0    - 4.4.4
-corr_operation             3.2.0    - 4.4.4
-correlation                3.2.0    - 4.4.4
-dashboard                  3.4.0    - 4.4.4
-dashboard_user             3.4.0    - 4.4.4
-dashboard_usrgrp           3.4.0    - 4.4.4
-dbversion                  2.1.0    - 4.4.4
-dchecks                    1.3.4    - 4.4.4
-dhosts                     1.3.4    - 4.4.4
-drules                     1.3.4    - 4.4.4
-dservices                  1.3.4    - 4.4.4
-escalations                1.5.3    - 4.4.4
-event_recovery             3.2.0    - 4.4.4     SCHEMAONLY
-event_suppress             4.0.0    - 4.4.4     SCHEMAONLY
-event_tag                  3.2.0    - 4.4.4     SCHEMAONLY
-events                     1.3.1    - 4.4.4     SCHEMAONLY
-expressions                1.7      - 4.4.4
-functions                  1.3.1    - 4.4.4
-globalmacro                1.7      - 4.4.4
-globalvars                 1.9.6    - 4.4.4
-graph_discovery            1.9.0    - 4.4.4
-graph_theme                1.7      - 4.4.4
-graphs                     1.3.1    - 4.4.4
-graphs_items               1.3.1    - 4.4.4
-group_discovery            2.1.4    - 4.4.4
-group_prototype            2.1.4    - 4.4.4
+autoreg_host               1.7      - 5.0.2
+conditions                 1.3.1    - 5.0.2
+config                     1.3.1    - 5.0.2
+config_autoreg_tls         4.4.0    - 5.0.2
+corr_condition             3.2.0    - 5.0.2
+corr_condition_group       3.2.0    - 5.0.2
+corr_condition_tag         3.2.0    - 5.0.2
+corr_condition_tagpair     3.2.0    - 5.0.2
+corr_condition_tagvalue    3.2.0    - 5.0.2
+corr_operation             3.2.0    - 5.0.2
+correlation                3.2.0    - 5.0.2
+dashboard                  3.4.0    - 5.0.2
+dashboard_user             3.4.0    - 5.0.2
+dashboard_usrgrp           3.4.0    - 5.0.2
+dbversion                  2.1.0    - 5.0.2
+dchecks                    1.3.4    - 5.0.2
+dhosts                     1.3.4    - 5.0.2
+drules                     1.3.4    - 5.0.2
+dservices                  1.3.4    - 5.0.2
+escalations                1.5.3    - 5.0.2
+event_recovery             3.2.0    - 5.0.2     SCHEMAONLY
+event_suppress             4.0.0    - 5.0.2     SCHEMAONLY
+event_tag                  3.2.0    - 5.0.2     SCHEMAONLY
+events                     1.3.1    - 5.0.2     SCHEMAONLY
+expressions                1.7      - 5.0.2
+functions                  1.3.1    - 5.0.2
+globalmacro                1.7      - 5.0.2
+globalvars                 1.9.6    - 5.0.2
+graph_discovery            1.9.0    - 5.0.2
+graph_theme                1.7      - 5.0.2
+graphs                     1.3.1    - 5.0.2
+graphs_items               1.3.1    - 5.0.2
+group_discovery            2.1.4    - 5.0.2
+group_prototype            2.1.4    - 5.0.2
 groups                     1.3.1    - 3.4.15
 help_items                 1.3.1    - 2.1.8
-history                    1.3.1    - 4.4.4     SCHEMAONLY
-history_log                1.3.1    - 4.4.4     SCHEMAONLY
-history_str                1.3.1    - 4.4.4     SCHEMAONLY
+history                    1.3.1    - 5.0.2     SCHEMAONLY
+history_log                1.3.1    - 5.0.2     SCHEMAONLY
+history_str                1.3.1    - 5.0.2     SCHEMAONLY
 history_str_sync           1.3.1    - 2.2.23    SCHEMAONLY
 history_sync               1.3.1    - 2.2.23    SCHEMAONLY
-history_text               1.3.1    - 4.4.4     SCHEMAONLY
-history_uint               1.3.1    - 4.4.4     SCHEMAONLY
+history_text               1.3.1    - 5.0.2     SCHEMAONLY
+history_uint               1.3.1    - 5.0.2     SCHEMAONLY
 history_uint_sync          1.3.1    - 2.2.23    SCHEMAONLY
-host_discovery             2.1.4    - 4.4.4
-host_inventory             1.9.6    - 4.4.4
+host_discovery             2.1.4    - 5.0.2
+host_inventory             1.9.6    - 5.0.2
 host_profile               1.9.3    - 1.9.5
-host_tag                   4.2.0    - 4.4.4
-hostmacro                  1.7      - 4.4.4
-hosts                      1.3.1    - 4.4.4
-hosts_groups               1.3.1    - 4.4.4
+host_tag                   4.2.0    - 5.0.2
+hostmacro                  1.7      - 5.0.2
+hosts                      1.3.1    - 5.0.2
+hosts_groups               1.3.1    - 5.0.2
 hosts_profiles             1.3.1    - 1.9.2
 hosts_profiles_ext         1.6      - 1.9.2
-hosts_templates            1.3.1    - 4.4.4
-housekeeper                1.3.1    - 4.4.4
-hstgrp                     4.0.0    - 4.4.4
-httpstep                   1.3.3    - 4.4.4
-httpstep_field             3.4.0    - 4.4.4
-httpstepitem               1.3.3    - 4.4.4
-httptest                   1.3.3    - 4.4.4
-httptest_field             3.4.0    - 4.4.4
-httptestitem               1.3.3    - 4.4.4
-icon_map                   1.9.6    - 4.4.4
-icon_mapping               1.9.6    - 4.4.4
-ids                        1.3.3    - 4.4.4
-images                     1.3.1    - 4.4.4
-interface                  1.9.1    - 4.4.4
-interface_discovery        2.1.4    - 4.4.4
-interface_snmp             5.0.0    - 5.0.0
-item_application_prototype 2.5.0    - 4.4.4
-item_condition             2.3.0    - 4.4.4
-item_discovery             1.9.0    - 4.4.4
-item_preproc               3.4.0    - 4.4.4
-item_rtdata                4.4.0    - 4.4.4     SCHEMAONLY
-items                      1.3.1    - 4.4.4
-items_applications         1.3.1    - 4.4.4
-lld_macro_path             4.2.0    - 4.4.4
-lld_override               5.0.0    - 5.0.0
-lld_override_condition     5.0.0    - 5.0.0
-lld_override_opdiscover    5.0.0    - 5.0.0
-lld_override_operation     5.0.0    - 5.0.0
-lld_override_ophistory     5.0.0    - 5.0.0
-lld_override_opinventory   5.0.0    - 5.0.0
-lld_override_opperiod      5.0.0    - 5.0.0
-lld_override_opseverity    5.0.0    - 5.0.0
-lld_override_opstatus      5.0.0    - 5.0.0
-lld_override_optag         5.0.0    - 5.0.0
-lld_override_optemplate    5.0.0    - 5.0.0
-lld_override_optrends      5.0.0    - 5.0.0
-maintenance_tag            4.0.0    - 4.4.4
-maintenances               1.7      - 4.4.4
-maintenances_groups        1.7      - 4.4.4
-maintenances_hosts         1.7      - 4.4.4
-maintenances_windows       1.7      - 4.4.4
-mappings                   1.3.1    - 4.4.4
-media                      1.3.1    - 4.4.4
-media_type                 1.3.1    - 4.4.4
-media_type_message         5.0.0    - 5.0.0
-media_type_param           4.4.0    - 4.4.4
-module                     5.0.0    - 5.0.0
+hosts_templates            1.3.1    - 5.0.2
+housekeeper                1.3.1    - 5.0.2
+hstgrp                     4.0.0    - 5.0.2
+httpstep                   1.3.3    - 5.0.2
+httpstep_field             3.4.0    - 5.0.2
+httpstepitem               1.3.3    - 5.0.2
+httptest                   1.3.3    - 5.0.2
+httptest_field             3.4.0    - 5.0.2
+httptestitem               1.3.3    - 5.0.2
+icon_map                   1.9.6    - 5.0.2
+icon_mapping               1.9.6    - 5.0.2
+ids                        1.3.3    - 5.0.2
+images                     1.3.1    - 5.0.2
+interface                  1.9.1    - 5.0.2
+interface_discovery        2.1.4    - 5.0.2
+interface_snmp             5.0.0    - 5.0.2
+item_application_prototype 2.5.0    - 5.0.2
+item_condition             2.3.0    - 5.0.2
+item_discovery             1.9.0    - 5.0.2
+item_preproc               3.4.0    - 5.0.2
+item_rtdata                4.4.0    - 5.0.2     SCHEMAONLY
+items                      1.3.1    - 5.0.2
+items_applications         1.3.1    - 5.0.2
+lld_macro_path             4.2.0    - 5.0.2
+lld_override               5.0.0    - 5.0.2
+lld_override_condition     5.0.0    - 5.0.2
+lld_override_opdiscover    5.0.0    - 5.0.2
+lld_override_operation     5.0.0    - 5.0.2
+lld_override_ophistory     5.0.0    - 5.0.2
+lld_override_opinventory   5.0.0    - 5.0.2
+lld_override_opperiod      5.0.0    - 5.0.2
+lld_override_opseverity    5.0.0    - 5.0.2
+lld_override_opstatus      5.0.0    - 5.0.2
+lld_override_optag         5.0.0    - 5.0.2
+lld_override_optemplate    5.0.0    - 5.0.2
+lld_override_optrends      5.0.0    - 5.0.2
+maintenance_tag            4.0.0    - 5.0.2
+maintenances               1.7      - 5.0.2
+maintenances_groups        1.7      - 5.0.2
+maintenances_hosts         1.7      - 5.0.2
+maintenances_windows       1.7      - 5.0.2
+mappings                   1.3.1    - 5.0.2
+media                      1.3.1    - 5.0.2
+media_type                 1.3.1    - 5.0.2
+media_type_message         5.0.0    - 5.0.2
+media_type_param           4.4.0    - 5.0.2
+module                     5.0.0    - 5.0.2
 node_cksum                 1.3.1    - 2.2.23
 node_configlog             1.3.1    - 1.4.7
 nodes                      1.3.1    - 2.2.23
-opcommand                  1.9.4    - 4.4.4
-opcommand_grp              1.9.2    - 4.4.4
-opcommand_hst              1.9.2    - 4.4.4
-opconditions               1.5.3    - 4.4.4
-operations                 1.3.4    - 4.4.4
-opgroup                    1.9.2    - 4.4.4
-opinventory                3.0.0    - 4.4.4
+opcommand                  1.9.4    - 5.0.2
+opcommand_grp              1.9.2    - 5.0.2
+opcommand_hst              1.9.2    - 5.0.2
+opconditions               1.5.3    - 5.0.2
+operations                 1.3.4    - 5.0.2
+opgroup                    1.9.2    - 5.0.2
+opinventory                3.0.0    - 5.0.2
 opmediatypes               1.7      - 1.8.22
-opmessage                  1.9.2    - 4.4.4
-opmessage_grp              1.9.2    - 4.4.4
-opmessage_usr              1.9.2    - 4.4.4
-optemplate                 1.9.2    - 4.4.4
-problem                    3.2.0    - 4.4.4     SCHEMAONLY
-problem_tag                3.2.0    - 4.4.4     SCHEMAONLY
-profiles                   1.3.1    - 4.4.4
-proxy_autoreg_host         1.7      - 4.4.4
-proxy_dhistory             1.5      - 4.4.4
-proxy_history              1.5.1    - 4.4.4
-regexps                    1.7      - 4.4.4
-rights                     1.3.1    - 4.4.4
-screen_user                3.0.0    - 4.4.4
-screen_usrgrp              3.0.0    - 4.4.4
-screens                    1.3.1    - 4.4.4
-screens_items              1.3.1    - 4.4.4
-scripts                    1.5      - 4.4.4
-service_alarms             1.3.1    - 4.4.4
-services                   1.3.1    - 4.4.4
-services_links             1.3.1    - 4.4.4
-services_times             1.3.1    - 4.4.4
-sessions                   1.3.1    - 4.4.4
-slides                     1.3.4    - 4.4.4
-slideshow_user             3.0.0    - 4.4.4
-slideshow_usrgrp           3.0.0    - 4.4.4
-slideshows                 1.3.4    - 4.4.4
-sysmap_element_trigger     3.4.0    - 4.4.4
-sysmap_element_url         1.9.0    - 4.4.4
-sysmap_shape               3.4.0    - 4.4.4
-sysmap_url                 1.9.0    - 4.4.4
-sysmap_user                3.0.0    - 4.4.4
-sysmap_usrgrp              3.0.0    - 4.4.4
-sysmaps                    1.3.1    - 4.4.4
-sysmaps_elements           1.3.1    - 4.4.4
-sysmaps_link_triggers      1.5      - 4.4.4
-sysmaps_links              1.3.1    - 4.4.4
-tag_filter                 4.0.0    - 4.4.4
-task                       3.2.0    - 4.4.4     SCHEMAONLY
-task_acknowledge           3.4.0    - 4.4.4     SCHEMAONLY
-task_check_now             4.0.0    - 4.4.4     SCHEMAONLY
-task_close_problem         3.2.0    - 4.4.4     SCHEMAONLY
-task_data                  5.0.0    - 5.0.0
-task_remote_command        3.4.0    - 4.4.4     SCHEMAONLY
-task_remote_command_result 3.4.0    - 4.4.4     SCHEMAONLY
-task_result                5.0.0    - 5.0.0
-timeperiods                1.7      - 4.4.4
-trends                     1.3.1    - 4.4.4     SCHEMAONLY
-trends_uint                1.5      - 4.4.4     SCHEMAONLY
-trigger_depends            1.3.1    - 4.4.4
-trigger_discovery          1.9.0    - 4.4.4
-trigger_tag                3.2.0    - 4.4.4
-triggers                   1.3.1    - 4.4.4
+opmessage                  1.9.2    - 5.0.2
+opmessage_grp              1.9.2    - 5.0.2
+opmessage_usr              1.9.2    - 5.0.2
+optemplate                 1.9.2    - 5.0.2
+problem                    3.2.0    - 5.0.2     SCHEMAONLY
+problem_tag                3.2.0    - 5.0.2     SCHEMAONLY
+profiles                   1.3.1    - 5.0.2
+proxy_autoreg_host         1.7      - 5.0.2
+proxy_dhistory             1.5      - 5.0.2
+proxy_history              1.5.1    - 5.0.2
+regexps                    1.7      - 5.0.2
+rights                     1.3.1    - 5.0.2
+screen_user                3.0.0    - 5.0.2
+screen_usrgrp              3.0.0    - 5.0.2
+screens                    1.3.1    - 5.0.2
+screens_items              1.3.1    - 5.0.2
+scripts                    1.5      - 5.0.2
+service_alarms             1.3.1    - 5.0.2
+services                   1.3.1    - 5.0.2
+services_links             1.3.1    - 5.0.2
+services_times             1.3.1    - 5.0.2
+sessions                   1.3.1    - 5.0.2
+slides                     1.3.4    - 5.0.2
+slideshow_user             3.0.0    - 5.0.2
+slideshow_usrgrp           3.0.0    - 5.0.2
+slideshows                 1.3.4    - 5.0.2
+sysmap_element_trigger     3.4.0    - 5.0.2
+sysmap_element_url         1.9.0    - 5.0.2
+sysmap_shape               3.4.0    - 5.0.2
+sysmap_url                 1.9.0    - 5.0.2
+sysmap_user                3.0.0    - 5.0.2
+sysmap_usrgrp              3.0.0    - 5.0.2
+sysmaps                    1.3.1    - 5.0.2
+sysmaps_elements           1.3.1    - 5.0.2
+sysmaps_link_triggers      1.5      - 5.0.2
+sysmaps_links              1.3.1    - 5.0.2
+tag_filter                 4.0.0    - 5.0.2
+task                       3.2.0    - 5.0.2     SCHEMAONLY
+task_acknowledge           3.4.0    - 5.0.2     SCHEMAONLY
+task_check_now             4.0.0    - 5.0.2     SCHEMAONLY
+task_close_problem         3.2.0    - 5.0.2     SCHEMAONLY
+task_data                  5.0.0    - 5.0.2
+task_remote_command        3.4.0    - 5.0.2     SCHEMAONLY
+task_remote_command_result 3.4.0    - 5.0.2     SCHEMAONLY
+task_result                5.0.0    - 5.0.2
+timeperiods                1.7      - 5.0.2
+trends                     1.3.1    - 5.0.2     SCHEMAONLY
+trends_uint                1.5      - 5.0.2     SCHEMAONLY
+trigger_depends            1.3.1    - 5.0.2
+trigger_discovery          1.9.0    - 5.0.2
+trigger_tag                3.2.0    - 5.0.2
+triggers                   1.3.1    - 5.0.2
 user_history               1.7      - 2.4.8
-users                      1.3.1    - 4.4.4
-users_groups               1.3.1    - 4.4.4
-usrgrp                     1.3.1    - 4.4.4
-valuemaps                  1.3.1    - 4.4.4
-widget                     3.4.0    - 4.4.4
-widget_field               3.4.0    - 4.4.4
+users                      1.3.1    - 5.0.2
+users_groups               1.3.1    - 5.0.2
+usrgrp                     1.3.1    - 5.0.2
+valuemaps                  1.3.1    - 5.0.2
+widget                     3.4.0    - 5.0.2
+widget_field               3.4.0    - 5.0.2
