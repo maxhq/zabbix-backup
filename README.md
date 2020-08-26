@@ -1,6 +1,6 @@
 # Backup script for Zabbix configuration data (MySQL/PostgreSQL)
 
-This is a MySQL/PostgreSQL database backup script for the [Zabbix](http://www.zabbix.com/) monitoring software from version 1.3.1 up to 4.4.
+This is a MySQL/PostgreSQL database backup script for the [Zabbix](http://www.zabbix.com/) monitoring software from version 1.3.1 up to 5.0.
 
 ## Download
 
@@ -13,6 +13,10 @@ https://github.com/maxhq/zabbix-backup/releases/latest
 Please see the [Project Wiki](https://github.com/maxhq/zabbix-backup/wiki).
 
 ## Version history
+
+**0.9.4 (2020-08-20)**
+
+- ENH: Support for Zabbix 5.0
 
 **0.9.3 (2020-01-17)**
 
