@@ -505,7 +505,7 @@ mkdir -p "${DUMPDIR}"
 case $DBTYPE in
     mysql)
         # dump schemas
-        DUMP_OPTS=(--opt --single-transaction --skip-lock-tables --no-data --routines)
+        DUMP_OPTS=(--opt --single-transaction --skip-lock-tables --no-data --routines --events)
         if [ $HANDLE_UNKNOWN == "ignore" ]; then
             while read -r table; do
                 if elementIn "$table" "${UNKNOWN_TABLES[@]}"; then
