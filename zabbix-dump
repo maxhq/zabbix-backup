@@ -56,6 +56,7 @@ DEFAULT_DBPASS=""
 COMPRESSION="gz"
 QUIET="no"
 REVERSELOOKUP="yes"
+COLUMN_NAMES="no"
 GENERATIONSTOKEEP=0
 ZBX_CONFIG="/etc/zabbix/zabbix_server.conf"
 READ_ZBX_CONFIG="yes"
@@ -149,6 +150,9 @@ OPTIONS
     -n
         Skip reverse lookup of IP address for host.
 
+    -N
+        Add column names in INSERT INTO .. VALUES .. and quote them as needed
+
     -f
         Force backup for unknown tables / forward compatibility:
         Don't complain about unknown tables and make a full backup of them
@@ -194,7 +198,7 @@ fi
 # PARSE COMMAND LINE ARGUMENTS
 #
 DB_GIVEN=0
-while getopts ":c:S:d:H:o:p:P:r:s:t:u:z:0nqxZfiv" opt; do
+while getopts ":c:S:d:H:o:p:P:r:s:t:u:z:0nNqxZfiv" opt; do
     case $opt in
         t)  DBTYPE="$OPTARG" ;;
         H)  ODBHOST="$OPTARG" ;;
@@ -212,6 +216,7 @@ while getopts ":c:S:d:H:o:p:P:r:s:t:u:z:0nqxZfiv" opt; do
         x)  COMPRESSION="xz" ;;
         0)  COMPRESSION="" ;;
         n)  REVERSELOOKUP="no" ;;
+        N)  COLUMN_NAMES="yes" ;;
         f)  HANDLE_UNKNOWN="backup" ;;
         i)  HANDLE_UNKNOWN="ignore" ;;
         q)  QUIET="yes" ;;
@@ -520,6 +525,11 @@ case $DBTYPE in
 
         # dump data
         DUMP_OPTS=(--opt --single-transaction --skip-lock-tables --no-create-info --skip-extended-insert)
+
+        if [ "${COLUMN_NAMES}" == "yes" ]; then
+            DUMP_OPTS+=( --complete-insert --quote-names )
+        fi
+
         while read -r table; do
             if elementIn "$table" "${SCHEMAONLY_TABLES[@]}"; then
                 DUMP_OPTS+=(--ignore-table=$DBNAME.$table)
@@ -537,7 +547,12 @@ case $DBTYPE in
         if [ $? -ne 0 ]; then echo $'\nERROR: Could not backup table data.\n' >&2; cat $ERRORLOG >&2; exit 1; fi
     ;;
     psql)
-        DUMP_OPTS=()
+        DUMP_OPTS=( --format=plain )
+
+        if [ "${COLUMN_NAMES}" == "yes" ]; then
+            DUMP_OPTS+=( --inserts --column-inserts --quote-all-identifiers )
+        fi
+
         while read -r table; do
             if [ $HANDLE_UNKNOWN == "ignore" ]; then
                 if elementIn "$table" "${UNKNOWN_TABLES[@]}"; then
