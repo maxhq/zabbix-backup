@@ -326,7 +326,7 @@ case $DBTYPE in
            echo "$DBHOST:$DBPORT:$DBNAME:$DBUSER:$DBPASS" > $PGPASSFILE
            chmod 600 $PGPASSFILE
         fi
-        DB_OPTS_BATCH=("${DB_OPTS[@]}" -Atw)
+        DB_OPTS_BATCH=("${DB_OPTS[@]}" -AtwX)
         [ -n "$DBNAME" ] && DB_OPTS_BATCH=("${DB_OPTS_BATCH[@]}" -d $DBNAME)
         ;;
 esac
