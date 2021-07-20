@@ -1,18 +1,57 @@
 # Backup script for Zabbix configuration data (MySQL/PostgreSQL)
 
-This is a MySQL/PostgreSQL database backup script for the [Zabbix](http://www.zabbix.com/) monitoring software from version 1.3.1 up to 4.4.
+This is a MySQL/PostgreSQL database backup script for the [Zabbix](http://www.zabbix.com/) monitoring software from version 1.3.1 up to 5.4.
 
 ## Download
 
 Download the latest (stable) release here:
 
-https://github.com/maxhq/zabbix-backup/releases/latest
+https://github.com/npotorino/zabbix-backup/releases/latest
 
 ## More informations
 
-Please see the [Project Wiki](https://github.com/maxhq/zabbix-backup/wiki).
+Please see the [Project Wiki](https://github.com/npotorino/zabbix-backup/wiki).
+
+## Examples
+
+### Backup
+
+Example: backup Zabbix 5.0.1 with PostgreSQL and TimeScaleDB
+
+```
+git clone https://github.com/npotorino/zabbix-backup
+cd zabbix-backup
+./zabbix-dump -t psql -H localhost -P 5432 -o /var/backup
+```
+
+### Restore
+
+Example: restore Zabbix 5.0 with PostgreSQL and TimeScaleDB
+
+```
+systemctl stop zabbix-server.service
+sudo -u postgres dropdb zabbix
+sudo -u postgres createdb -O zabbix zabbix
+
+echo "CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;" | sudo -u postgres psql zabbix
+echo "SELECT timescaledb_pre_restore();" | sudo -u postgres psql zabbix
+
+gunzip /var/backup/zabbix_cfg_localhost_20200730-1810_db-psql-5.0.1.sql.gz
+sudo -u postgres psql zabbix < /var/backup/zabbix_cfg_localhost_20200730-1810_db-psql-5.0.1.sql
+
+echo "SELECT timescaledb_post_restore();" | sudo -u postgres psql zabbix
+systemctl restart postgresql-12.service
+systemctl start zabbix-server.service
+```
 
 ## Version history
+
+**0.9.5 (2021-07-20)**
+- ENH: Support for Zabbix 5.2 and 5.4
+
+**0.9.4 (2021-01-21)**
+- ENH: Support for Zabbix 5.0
+- FIX: Be more specific on detecting mysql socket
 
 **0.9.3 (2020-01-17)**
 
